@@ -100,6 +100,26 @@ int main(int argc, char* argv[]) {
       ->type_name("(never|broken|missing|always)");
 
   app.add_option(
+         "--compute-tangents",
+         [&](std::vector<std::string> choices) -> bool {
+           for (const std::string choice : choices) {
+             if (choice == "never") {
+               gltfOptions.computeTangents = ComputeTangentsOption::NEVER;
+             } else if (choice == "missing") {
+               gltfOptions.computeTangents = ComputeTangentsOption::MISSING;
+             } else if (choice == "always") {
+               gltfOptions.computeTangents = ComputeTangentsOption::ALWAYS;
+             } else {
+               fmt::printf("Unknown --compute-tangents option: %s\n", choice);
+               throw CLI::RuntimeError(1);
+             }
+           }
+           return true;
+         },
+         "When to compute vertex tangents from mesh geometry.")
+      ->type_name("(never|missing|always)");
+
+  app.add_option(
          "--anim-framerate",
          [&](std::vector<std::string> choices) -> bool {
            for (const std::string choice : choices) {

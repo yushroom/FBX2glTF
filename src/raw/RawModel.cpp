@@ -483,6 +483,28 @@ void RawModel::TransformGeometry(ComputeNormalsOption normals) {
   }
 }
 
+void RawModel::TransformGeometry(ComputeTangentsOption tangents) {
+  switch (tangents) {
+    case ComputeTangentsOption::NEVER:
+      break;
+    case ComputeTangentsOption::MISSING:
+      if ((vertexAttributes & RAW_VERTEX_ATTRIBUTE_TANGENT) != 0) {
+        break;
+      }
+      // otherwise fall through
+    case ComputeTangentsOption::ALWAYS:
+      bool result = this->CalculateTangents();
+      if (result) {
+        vertexAttributes |= RAW_VERTEX_ATTRIBUTE_TANGENT;
+      }
+
+      if (verboseOutput) {
+        fmt::printf("Computed tangents result: %s.\n", result ? "OK" : "Failed");
+      }
+      break;
+  }
+}
+
 void RawModel::TransformTextures(const std::vector<std::function<Vec2f(Vec2f)>>& transforms) {
   for (auto& vertice : vertices) {
     if ((vertexAttributes & RAW_VERTEX_ATTRIBUTE_UV0) != 0) {
@@ -776,4 +798,100 @@ size_t RawModel::CalculateNormals(bool onlyBroken) {
     vertex.normal.Normalize();
   }
   return onlyBroken ? brokenVerts.size() : vertices.size();
+}
+
+#include <mikktspace.h>
+
+struct MeshProcess {
+  static int GetNumFaces(const SMikkTSpaceContext* pContext) {
+    RawModel* mesh = (RawModel*)pContext->m_pUserData;
+    return mesh->GetTriangleCount();
+  }
+
+  static int GetNumVerticesOfFace(const SMikkTSpaceContext* /*pContext*/, const int /*iFace*/) {
+    return 3;
+  }
+
+  static void GetPosition(
+      const SMikkTSpaceContext* pContext,
+      float fvPosOut[],
+      const int iFace,
+      const int iVert) {
+    RawModel* model = (RawModel*)pContext->m_pUserData;
+    uint32_t idx = iFace * 3 + iVert;
+    if (model->GetTriangleCount() > 0) {
+      idx = model->GetTriangle(iFace).verts[iVert];
+    }
+    auto& pos = model->GetVertex(idx).position;
+    fvPosOut[0] = pos.x;
+    fvPosOut[1] = pos.y;
+    fvPosOut[2] = pos.z;
+  }
+
+  static void GetNormal(
+      const SMikkTSpaceContext* pContext,
+      float fvNormOut[],
+      const int iFace,
+      const int iVert) {
+    RawModel* model = (RawModel*)pContext->m_pUserData;
+    uint32_t idx = iFace * 3 + iVert;
+    if (model->GetTriangleCount() > 0) {
+      idx = model->GetTriangle(iFace).verts[iVert];
+    }
+    auto& normal = model->GetVertex(idx).normal;
+    fvNormOut[0] = normal.x;
+    fvNormOut[1] = normal.y;
+    fvNormOut[2] = normal.z;
+  }
+
+  static void GetTexCoord(
+      const SMikkTSpaceContext* pContext,
+      float fvTexcOut[],
+      const int iFace,
+      const int iVert) {
+    RawModel* model = (RawModel*)pContext->m_pUserData;
+    uint32_t idx = iFace * 3 + iVert;
+    if (model->GetTriangleCount() > 0) {
+      idx = model->GetTriangle(iFace).verts[iVert];
+    }
+    auto& uv = model->GetVertex(idx).uv0;
+    fvTexcOut[0] = uv.x;
+    fvTexcOut[1] = uv.y;
+  }
+
+  static void SetTSpaceBasic(
+      const SMikkTSpaceContext* pContext,
+      const float fvTangent[],
+      const float fSign,
+      const int iFace,
+      const int iVert) {
+    RawModel* model = (RawModel*)pContext->m_pUserData;
+    uint32_t idx = iFace * 3 + iVert;
+    if (model->GetTriangleCount() > 0) {
+      idx = model->GetTriangle(iFace).verts[iVert];
+    }
+    auto& tangent = model->GetVertex(idx).tangent;
+    tangent.x = fvTangent[0];
+    tangent.y = fvTangent[1];
+    tangent.z = fvTangent[2];
+    tangent.w = fSign;
+  }
+};
+
+bool RawModel::CalculateTangents() {
+  SMikkTSpaceInterface i;
+  i.m_getNumFaces = MeshProcess::GetNumFaces;
+  i.m_getNumVerticesOfFace = MeshProcess::GetNumVerticesOfFace;
+  i.m_getPosition = MeshProcess::GetPosition;
+  i.m_getNormal = MeshProcess::GetNormal;
+  i.m_getTexCoord = MeshProcess::GetTexCoord;
+  i.m_setTSpaceBasic = MeshProcess::SetTSpaceBasic;
+  i.m_setTSpace = nullptr;
+
+  SMikkTSpaceContext ctx;
+  ctx.m_pInterface = &i;
+  ctx.m_pUserData = (void*)this;
+
+  int ret = genTangSpaceDefault(&ctx);
+  return ret == 1;
 }

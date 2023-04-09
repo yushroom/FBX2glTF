@@ -424,9 +424,13 @@ class RawModel {
 
   void TransformGeometry(ComputeNormalsOption);
 
+  void TransformGeometry(ComputeTangentsOption);
+
   void TransformTextures(const std::vector<std::function<Vec2f(Vec2f)>>& transforms);
 
   size_t CalculateNormals(bool);
+
+  bool CalculateTangents();
 
   // Get the attributes stored per vertex.
   int GetVertexAttributes() const {
@@ -443,6 +447,10 @@ class RawModel {
   }
 
   const RawVertex& GetVertex(const int index) const {
+    return vertices[index];
+  }
+
+  RawVertex& GetVertex(const int index) {
     return vertices[index];
   }
 

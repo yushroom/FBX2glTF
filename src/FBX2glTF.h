@@ -62,6 +62,16 @@ enum class ComputeNormalsOption {
   ALWAYS // compute a new normal for every vertex, obliterating whatever may have been there before
 };
 
+/**
+ * The variuos situations in which the user may wish for us to (re-)compute tangents for our
+ * vertices.
+ */
+enum class ComputeTangentsOption {
+  NEVER, // do not ever compute any tangents (results in broken glTF for some sources)
+  MISSING, // if a mesh lacks tangents, compute them all
+  ALWAYS // compute a new tangent for every vertex, obliterating whatever may have been there before
+};
+
 enum class UseLongIndicesOptions {
   NEVER, // only ever use 16-bit indices
   AUTO, // use shorts or longs depending on vertex count
@@ -126,6 +136,8 @@ struct GltfOptions {
   int maxSkinningWeights{8};
   /** When to compute vertex normals from geometry. */
   ComputeNormalsOption computeNormals = ComputeNormalsOption::BROKEN;
+  /** When to compute vertex normals from geometry. */
+  ComputeTangentsOption computeTangents = ComputeTangentsOption::MISSING;
   /** When to use 32-bit indices. */
   UseLongIndicesOptions useLongIndices = UseLongIndicesOptions::AUTO;
   /** Select baked animation framerate. */
