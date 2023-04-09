@@ -1024,7 +1024,7 @@ ModelData* Raw2Gltf(
 
     gltf->serializeHolders(glTFJson);
 
-    gltfOutStream << glTFJson.dump(options.outputBinary ? 0 : 4);
+    gltfOutStream << glTFJson.dump(options.outputBinary ? 0 : 2);
   }
   if (options.outputBinary) {
     uint32_t jsonLength = (uint32_t)gltfOutStream.tellp() - 20;
