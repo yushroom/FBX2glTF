@@ -104,6 +104,8 @@ struct GltfOptions {
 
   bool keepOriginalTextureFiles{false};
 
+  bool ignoreAnimation{false};
+
 #ifdef FBX2GLTF_DRACO
   /** Whether and how to use KHR_draco_mesh_compression to minimize static geometry size. */
   struct {

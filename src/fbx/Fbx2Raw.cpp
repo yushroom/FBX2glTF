@@ -1176,7 +1176,9 @@ bool LoadFBXFile(
 
   ReadNodeHierarchy(raw, pScene, pScene->GetRootNode(), 0, "");
   ReadNodeAttributes(raw, pScene, pScene->GetRootNode(), textureLocations);
-  ReadAnimations(raw, pScene, options);
+  if (!options.ignoreAnimation) {
+    ReadAnimations(raw, pScene, options);
+  }
 
   pScene->Destroy();
   pManager->Destroy();

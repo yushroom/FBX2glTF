@@ -58,6 +58,8 @@ int main(int argc, char* argv[]) {
   app.add_flag(
       "--keep-textures", gltfOptions.keepOriginalTextureFiles, "Do not copy/embed textures, keep original texture files");
 
+  app.add_flag("--ignore-animation", gltfOptions.ignoreAnimation, "Do not import/export animation");
+
   app.add_flag("-b,--binary", gltfOptions.outputBinary, "Output a single binary format .glb file.");
 
   app.add_option(
