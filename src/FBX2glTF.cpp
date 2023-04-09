@@ -390,6 +390,7 @@ int main(int argc, char* argv[]) {
   }
   raw.Condense(gltfOptions.maxSkinningWeights, gltfOptions.normalizeSkinningWeights);
   raw.TransformGeometry(gltfOptions.computeNormals);
+  raw.TransformGeometry(gltfOptions.computeTangents);
 
   std::ofstream outStream; // note: auto-flushes in destructor
   const auto streamStart = outStream.tellp();
