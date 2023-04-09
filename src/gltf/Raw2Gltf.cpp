@@ -44,6 +44,8 @@ typedef uint32_t TriangleIndex;
 
 #define DEFAULT_SCENE_NAME "Root Scene"
 
+std::string extBufferFilename = "buffer.bin";
+
 /**
  * This method sanity-checks existance and then returns a *reference* to the *Data instance
  * registered under that name. This is safe in the context of this tool, where all such data

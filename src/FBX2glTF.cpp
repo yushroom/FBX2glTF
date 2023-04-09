@@ -370,6 +370,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  extBufferFilename = FileUtils::GetFileBase(outputPath) + ".bin";
+
   ModelData* data_render_model = nullptr;
   RawModel raw;
 
