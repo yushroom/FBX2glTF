@@ -496,6 +496,7 @@ ModelData* Raw2Gltf(
            surfaceModel.GetVertexCount() > 65535);
 
       std::shared_ptr<PrimitiveData> primitive;
+#ifdef FBX2GLTF_DRACO
       if (options.draco.enabled) {
         size_t triangleCount = surfaceModel.GetTriangleCount();
 
@@ -517,6 +518,9 @@ ModelData* Raw2Gltf(
         indexes.count = to_uint32(3 * triangleCount);
         primitive.reset(new PrimitiveData(indexes, mData, dracoMesh));
       } else {
+#else
+      {
+#endif
         const AccessorData& indexes = *gltf->AddAccessorWithView(
             *gltf->GetAlignedBufferView(buffer, BufferViewData::GL_ELEMENT_ARRAY_BUFFER),
             useLongIndices ? GLT_UINT : GLT_USHORT,
@@ -540,12 +544,17 @@ ModelData* Raw2Gltf(
       std::shared_ptr<BufferViewData> dummyDataView;
       {
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_POSITION) != 0) {
+#ifdef FBX2GLTF_DRACO
           const AttributeDefinition<Vec3f> ATTR_POSITION(
               "POSITION",
               &RawVertex::position,
               GLT_VEC3F,
               draco::GeometryAttribute::POSITION,
               draco::DT_FLOAT32);
+#else
+          const AttributeDefinition<Vec3f> ATTR_POSITION(
+              "POSITION", &RawVertex::position, GLT_VEC3F);
+#endif
           auto accessor =
               gltf->AddAttributeToPrimitive<Vec3f>(buffer, surfaceModel, *primitive, ATTR_POSITION);
 
@@ -555,12 +564,16 @@ ModelData* Raw2Gltf(
           pAccBase = accessor;
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_NORMAL) != 0) {
+#ifdef FBX2GLTF_DRACO
           const AttributeDefinition<Vec3f> ATTR_NORMAL(
               "NORMAL",
               &RawVertex::normal,
               GLT_VEC3F,
               draco::GeometryAttribute::NORMAL,
               draco::DT_FLOAT32);
+#else
+          const AttributeDefinition<Vec3f> ATTR_NORMAL("NORMAL", &RawVertex::normal, GLT_VEC3F);
+#endif
           const auto _ =
               gltf->AddAttributeToPrimitive<Vec3f>(buffer, surfaceModel, *primitive, ATTR_NORMAL);
           nAccBase = _;
@@ -572,32 +585,46 @@ ModelData* Raw2Gltf(
           tAccBase = _;
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_COLOR) != 0) {
+#ifdef FBX2GLTF_DRACO
           const AttributeDefinition<Vec4f> ATTR_COLOR(
               "COLOR_0",
               &RawVertex::color,
               GLT_VEC4F,
               draco::GeometryAttribute::COLOR,
               draco::DT_FLOAT32);
+#else
+          const AttributeDefinition<Vec4f> ATTR_COLOR("COLOR_0", &RawVertex::color, GLT_VEC4F);
+#endif
           const auto _ =
               gltf->AddAttributeToPrimitive<Vec4f>(buffer, surfaceModel, *primitive, ATTR_COLOR);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_UV0) != 0) {
+#ifdef FBX2GLTF_DRACO
           const AttributeDefinition<Vec2f> ATTR_TEXCOORD_0(
               "TEXCOORD_0",
               &RawVertex::uv0,
               GLT_VEC2F,
               draco::GeometryAttribute::TEX_COORD,
               draco::DT_FLOAT32);
+#else
+          const AttributeDefinition<Vec2f> ATTR_TEXCOORD_0(
+              "TEXCOORD_0", &RawVertex::uv0, GLT_VEC2F);
+#endif
           const auto _ = gltf->AddAttributeToPrimitive<Vec2f>(
               buffer, surfaceModel, *primitive, ATTR_TEXCOORD_0);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_UV1) != 0) {
+#ifdef FBX2GLTF_DRACO
           const AttributeDefinition<Vec2f> ATTR_TEXCOORD_1(
               "TEXCOORD_1",
               &RawVertex::uv1,
               GLT_VEC2F,
               draco::GeometryAttribute::TEX_COORD,
               draco::DT_FLOAT32);
+#else
+          const AttributeDefinition<Vec2f> ATTR_TEXCOORD_1(
+              "TEXCOORD_1", &RawVertex::uv1, GLT_VEC2F);
+#endif
           const auto _ = gltf->AddAttributeToPrimitive<Vec2f>(
               buffer, surfaceModel, *primitive, ATTR_TEXCOORD_1);
         }
@@ -607,8 +634,10 @@ ModelData* Raw2Gltf(
                 std::string("JOINTS_") + std::to_string(i / 4),
                 &RawVertex::jointIndices,
                 GLT_VEC4I,
+#ifdef FBX2GLTF_DRACO
                 draco::GeometryAttribute::GENERIC,
                 draco::DT_UINT16,
+#endif
                 i / 4);
             const auto _ = gltf->AddAttributeArrayToPrimitive<Vec4i>(
                 buffer, surfaceModel, *primitive, ATTR_JOINTS);
@@ -620,8 +649,10 @@ ModelData* Raw2Gltf(
                 std::string("WEIGHTS_") + std::to_string(i / 4),
                 &RawVertex::jointWeights,
                 GLT_VEC4F,
+#ifdef FBX2GLTF_DRACO
                 draco::GeometryAttribute::GENERIC,
                 draco::DT_FLOAT32,
+#endif
                 i / 4);
             const auto _ = gltf->AddAttributeArrayToPrimitive<Vec4f>(
                 buffer, surfaceModel, *primitive, ATTR_WEIGHTS);
@@ -768,6 +799,7 @@ ModelData* Raw2Gltf(
           primitive->AddTarget(pAcc.get(), nAcc.get(), tAcc.get());
         }
       }
+#ifdef FBX2GLTF_DRACO
       if (options.draco.enabled) {
         // Set up the encoder.
         draco::Encoder encoder;
@@ -805,6 +837,7 @@ ModelData* Raw2Gltf(
             gltf->AddRawBufferView(buffer, dracoBuffer.data(), to_uint32(dracoBuffer.size()));
         primitive->NoteDracoBuffer(*view);
       }
+#endif
       mesh->AddPrimitive(primitive);
     }
 
@@ -970,10 +1003,12 @@ ModelData* Raw2Gltf(
     if (!gltf->lights.ptrs.empty()) {
       extensionsUsed.push_back(KHR_LIGHTS_PUNCTUAL);
     }
+#ifdef FBX2GLTF_DRACO
     if (options.draco.enabled) {
       extensionsUsed.push_back(KHR_DRACO_MESH_COMPRESSION);
       extensionsRequired.push_back(KHR_DRACO_MESH_COMPRESSION);
     }
+#endif
 
     json glTFJson{
         {"asset", {{"generator", "FBX2glTF v" + FBX2GLTF_VERSION}, {"version", "2.0"}}},

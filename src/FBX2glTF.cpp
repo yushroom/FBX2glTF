@@ -227,6 +227,7 @@ int main(int argc, char* argv[]) {
       ->type_size(-1)
       ->type_name("(position|normal|tangent|binormial|color|uv0|uv1|auto)");
 
+#ifdef FBX2GLTF_DRACO
   app.add_flag(
          "-d,--draco", gltfOptions.draco.enabled, "Apply Draco mesh compression to geometries.")
       ->group("Draco");
@@ -278,6 +279,7 @@ int main(int argc, char* argv[]) {
          true)
       ->check(CLI::Range(1, 32))
       ->group("Draco");
+#endif
 
   app.add_option(
          "--fbx-temp-dir", gltfOptions.fbxTempDir, "Temporary directory to be used by FBX SDK.")

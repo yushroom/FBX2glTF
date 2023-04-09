@@ -149,12 +149,16 @@ class GltfModel {
     surfaceModel.GetAttributeArray<T>(attribArr, attrDef.rawAttributeIx);
 
     std::shared_ptr<AccessorData> accessor;
+#ifdef FBX2GLTF_DRACO
     if (attrDef.dracoComponentType != draco::DT_INVALID && primitive.dracoMesh != nullptr) {
       primitive.AddDracoAttrib(attrDef, attribArr);
 
       accessor = accessors.hold(new AccessorData(attrDef.glType));
       accessor->count = to_uint32(attribArr.size());
     } else {
+#else
+    {
+#endif
       auto bufferView = GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER);
       accessor = AddAccessorWithView(*bufferView, attrDef.glType, attribArr, std::string(""));
     }
@@ -173,12 +177,16 @@ class GltfModel {
     surfaceModel.GetArrayAttributeArray<T>(attribArr, attrDef.rawAttributeIx, attrDef.arrayOffset);
 
     std::shared_ptr<AccessorData> accessor;
+#ifdef FBX2GLTF_DRACO
     if (attrDef.dracoComponentType != draco::DT_INVALID && primitive.dracoMesh != nullptr) {
       primitive.AddDracoArrayAttrib(attrDef, attribArr);
 
       accessor = accessors.hold(new AccessorData(attrDef.glType));
       accessor->count = attribArr.size();
     } else {
+#else
+    {
+#endif
       auto bufferView = GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER);
       accessor = AddAccessorWithView(*bufferView, attrDef.glType, attribArr, std::string(""));
     }

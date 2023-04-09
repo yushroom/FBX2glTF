@@ -12,6 +12,7 @@
 #include "BufferViewData.hpp"
 #include "MaterialData.hpp"
 
+#ifdef FBX2GLTF_DRACO
 PrimitiveData::PrimitiveData(
     const AccessorData& indices,
     const MaterialData& material,
@@ -28,14 +29,20 @@ PrimitiveData::PrimitiveData(const AccessorData& indices, const MaterialData& ma
       mode(TRIANGLES),
       dracoMesh(nullptr),
       dracoBufferView(-1) {}
+#else
+PrimitiveData::PrimitiveData(const AccessorData& indices, const MaterialData& material)
+    : indices(indices.ix), material(material.ix), mode(TRIANGLES) {}
+#endif
 
 void PrimitiveData::AddAttrib(std::string name, const AccessorData& accessor) {
   attributes[name] = accessor.ix;
 }
 
+#ifdef FBX2GLTF_DRACO
 void PrimitiveData::NoteDracoBuffer(const BufferViewData& data) {
   dracoBufferView = data.ix;
 }
+#endif
 
 void PrimitiveData::AddTarget(
     const AccessorData* positions,
@@ -72,9 +79,11 @@ void to_json(json& j, const PrimitiveData& d) {
     }
     j["targets"] = targets;
   }
+#ifdef FBX2GLTF_DRACO
   if (!d.dracoAttributes.empty()) {
     j["extensions"] = {
         {KHR_DRACO_MESH_COMPRESSION,
          {{"bufferView", d.dracoBufferView}, {"attributes", d.dracoAttributes}}}};
   }
+#endif
 }

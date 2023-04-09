@@ -102,6 +102,7 @@ struct GltfOptions {
 
   bool separateTextures{true};
 
+#ifdef FBX2GLTF_DRACO
   /** Whether and how to use KHR_draco_mesh_compression to minimize static geometry size. */
   struct {
     bool enabled = false;
@@ -112,6 +113,7 @@ struct GltfOptions {
     int quantBitsColor = 8;
     int quantBitsGeneric = 8;
   } draco;
+#endif
 
   /** Whether to include FBX User Properties as 'extras' metadata in glTF nodes. */
   bool enableUserProperties{true};

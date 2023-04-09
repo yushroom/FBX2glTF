@@ -11,9 +11,11 @@
 #include <memory>
 #include <string>
 
+#ifdef FBX2GLTF_DRACO
 // This can be a macro under Windows, confusing Draco
 #undef ERROR
 #include <draco/compression/encode.h>
+#endif
 
 #include "FBX2glTF.h"
 #include "raw/RawModel.hpp"
@@ -129,6 +131,7 @@ struct AttributeDefinition {
   const std::string gltfName;
   const T RawVertex::*rawAttributeIx;
   const GLType glType;
+#ifdef FBX2GLTF_DRACO
   const draco::GeometryAttribute::Type dracoAttribute;
   const draco::DataType dracoComponentType;
 
@@ -153,6 +156,13 @@ struct AttributeDefinition {
         glType(_glType),
         dracoAttribute(draco::GeometryAttribute::INVALID),
         dracoComponentType(draco::DataType::DT_INVALID) {}
+#else
+  AttributeDefinition(
+      const std::string gltfName,
+      const T RawVertex::*rawAttributeIx,
+      const GLType& _glType)
+      : gltfName(gltfName), rawAttributeIx(rawAttributeIx), glType(_glType) {}
+#endif
 };
 
 template <class T>
@@ -161,21 +171,27 @@ struct AttributeArrayDefinition {
   const std::vector<T> RawVertex::*rawAttributeIx;
   const GLType glType;
   const int arrayOffset;
+#ifdef FBX2GLTF_DRACO
   const draco::GeometryAttribute::Type dracoAttribute;
   const draco::DataType dracoComponentType;
+#endif
 
   AttributeArrayDefinition(
       const std::string gltfName,
       const std::vector<T> RawVertex::*rawAttributeIx,
       const GLType& _glType,
+#ifdef FBX2GLTF_DRACO
       const draco::GeometryAttribute::Type dracoAttribute,
       const draco::DataType dracoComponentType,
+#endif
       const int arrayOffset)
       : gltfName(gltfName),
         rawAttributeIx(rawAttributeIx),
         glType(_glType),
+#ifdef FBX2GLTF_DRACO
         dracoAttribute(dracoAttribute),
         dracoComponentType(dracoComponentType),
+#endif
         arrayOffset(arrayOffset) {}
 };
 
