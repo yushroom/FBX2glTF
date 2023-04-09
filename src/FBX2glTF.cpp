@@ -55,6 +55,9 @@ int main(int argc, char* argv[]) {
   app.add_flag(
       "-t,--separate-textures", gltfOptions.separateTextures, "Write texture files out separately");
 
+  app.add_flag(
+      "--keep-textures", gltfOptions.keepOriginalTextureFiles, "Do not copy/embed textures, keep original texture files");
+
   app.add_flag("-b,--binary", gltfOptions.outputBinary, "Output a single binary format .glb file.");
 
   app.add_option(

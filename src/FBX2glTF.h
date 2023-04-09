@@ -102,6 +102,8 @@ struct GltfOptions {
 
   bool separateTextures{true};
 
+  bool keepOriginalTextureFiles{false};
+
 #ifdef FBX2GLTF_DRACO
   /** Whether and how to use KHR_draco_mesh_compression to minimize static geometry size. */
   struct {
