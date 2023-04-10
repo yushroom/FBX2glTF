@@ -6,6 +6,7 @@ npm/tests/node_modules/
 npm/tests/test/*.js
 npm/tests/test/*.js.map
 build/
+bin/
 .cache/
 
 demo/.godot/
