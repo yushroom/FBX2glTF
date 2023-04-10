@@ -575,11 +575,15 @@ void RawModel::CreateMaterialModels(
         opaqueTriangles.push_back(triangle);
         continue;
       }
+#if 0
       if (textures[textureIndex].occlusion == RAW_TEXTURE_OCCLUSION_TRANSPARENT) {
         transparentTriangles.push_back(triangle);
       } else {
         opaqueTriangles.push_back(triangle);
       }
+#else
+      opaqueTriangles.push_back(triangle);
+#endif
     }
 
     // Sort the opaque triangles.
