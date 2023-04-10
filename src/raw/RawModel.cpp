@@ -105,7 +105,7 @@ int RawModel::AddTexture(
   }
   for (size_t i = 0; i < textures.size(); i++) {
     // we allocate the struct even if the implementing image file is missing
-    if (textures[i].usage == usage &&
+    if (/*textures[i].usage == usage &&*/
         StringUtils::CompareNoCase(textures[i].fileLocation, fileLocation) == 0 &&
         StringUtils::CompareNoCase(textures[i].name, name) == 0) {
       return (int)i;
@@ -117,6 +117,7 @@ int RawModel::AddTexture(
 
   RawTexture texture;
   texture.name = name;
+#if 0
   texture.width = properties.width;
   texture.height = properties.height;
   texture.mipLevels =
@@ -125,6 +126,7 @@ int RawModel::AddTexture(
   texture.occlusion = (properties.occlusion == ImageUtils::IMAGE_TRANSPARENT)
       ? RAW_TEXTURE_OCCLUSION_TRANSPARENT
       : RAW_TEXTURE_OCCLUSION_OPAQUE;
+#endif
   texture.fileName = fileName;
   texture.fileLocation = fileLocation;
   textures.emplace_back(texture);
@@ -383,7 +385,7 @@ void RawModel::Condense(const int maxSkinningWeights, const bool normalizeWeight
         if (material.textures[j] >= 0) {
           const RawTexture& texture = oldTextures[material.textures[j]];
           const int textureIndex =
-              AddTexture(texture.name, texture.fileName, texture.fileLocation, texture.usage);
+              AddTexture(texture.name, texture.fileName, texture.fileLocation/*, texture.usage*/);
           textures[textureIndex] = texture;
           material.textures[j] = textureIndex;
         }

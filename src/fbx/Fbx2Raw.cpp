@@ -82,9 +82,13 @@ static RawMaterialType GetMaterialType(
   }
   // determine material type based on texture occlusion.
   if (diffuseTexture >= 0) {
+#if 0
     return (raw.GetTexture(diffuseTexture).occlusion == RAW_TEXTURE_OCCLUSION_OPAQUE)
         ? (skinned ? RAW_MATERIAL_TYPE_SKINNED_OPAQUE : RAW_MATERIAL_TYPE_OPAQUE)
         : (skinned ? RAW_MATERIAL_TYPE_SKINNED_TRANSPARENT : RAW_MATERIAL_TYPE_TRANSPARENT);
+#else
+    return RAW_MATERIAL_TYPE_OPAQUE;
+#endif
   }
 
   // else if there is any vertex transparency, treat whole mesh as transparent
@@ -273,11 +277,12 @@ static void ReadMesh(
       materialId = fbxMaterial->id;
 
       const auto maybeAddTexture = [&](const FbxFileTexture* tex, RawTextureUsage usage) {
+        return;
         if (tex != nullptr) {
           // dig out the inferred filename from the textureLocations map
           FbxString inferredPath = raw.textureLocations.find(tex)->second;
           textures[usage] =
-              raw.AddTexture(tex->GetName(), tex->GetFileName(), inferredPath.Buffer(), usage);
+              raw.AddTexture(tex->GetName(), tex->GetFileName(), inferredPath.Buffer()/*, usage*/);
         }
       };
 
@@ -1168,6 +1173,12 @@ bool LoadFBXFile(
   }
 
   FindFbxTextures(pScene, fbxFileName, textureExtensions, raw.textureLocations);
+  for (int i = 0; i < pScene->GetTextureCount(); ++i) {
+    FbxTexture* tex = pScene->GetTexture(i);
+    const FbxFileTexture* pFileTexture = FbxCast<FbxFileTexture>(tex);
+    raw.AddTexture(pFileTexture->GetName(), pFileTexture->GetFileName(), raw.textureLocations[tex].Buffer());
+  }
+
 
   // Use Y up for glTF
   FbxAxisSystem::MayaYUp.ConvertScene(pScene);

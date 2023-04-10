@@ -168,11 +168,13 @@ enum RawTextureOcclusion { RAW_TEXTURE_OCCLUSION_OPAQUE, RAW_TEXTURE_OCCLUSION_T
 
 struct RawTexture {
   std::string name; // logical name in FBX file
+#if 0
   int width;
   int height;
   int mipLevels;
   RawTextureUsage usage;
   RawTextureOcclusion occlusion;
+#endif
   std::string fileName; // original filename in FBX file
   std::string fileLocation; // inferred path in local filesystem, or ""
 };
@@ -373,8 +375,8 @@ class RawModel {
   int AddTexture(
       const std::string& name,
       const std::string& fileName,
-      const std::string& fileLocation,
-      RawTextureUsage usage);
+      const std::string& fileLocation/*,
+      RawTextureUsage usage*/);
   int AddMaterial(const RawMaterial& material);
   int AddMaterial(
       const long id,
