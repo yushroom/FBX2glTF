@@ -27,7 +27,12 @@ inline std::string ToLower(std::string s) {
 }
 
 inline int CompareNoCase(const std::string& s1, const std::string& s2) {
-  return strncasecmp(s1.c_str(), s2.c_str(), std::max(s1.length(), s2.length()));
+  auto len1 = s1.size();
+  auto len2 = s2.size();
+  if (len1 == len2) {
+    return strncasecmp(s1.c_str(), s2.c_str(), len1);
+  }
+  return 1;
 }
 
 } // namespace StringUtils
