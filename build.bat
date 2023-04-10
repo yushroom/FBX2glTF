@@ -4,6 +4,7 @@ cd build
 
 cmake ../cmake
 cmake --build . --target FBX2glTF --config RelWithDebInfo
-xcopy /y /d RelWithDebInfo\FBX2glTF.exe ..\bin
+xcopy /y RelWithDebInfo\FBX2glTF.exe ..\bin
+xcopy /y RelWithDebInfo\libfbxsdk.dll ..\bin
 
 pause

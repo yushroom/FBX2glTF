@@ -91,9 +91,10 @@ add_executable(FBX2glTF
 set_target_properties(FBX2glTF PROPERTIES UNITY_BUILD ON)
 target_link_libraries(FBX2glTF PUBLIC fmt::fmt)
 
-set(FBXSDK_DIR ${CMAKE_CURRENT_LIST_DIR}/../sdk/Windows/2020.3.1)
+set(FBXSDK_DIR ${CMAKE_CURRENT_LIST_DIR}/../sdk/Windows/2020.3.2)
 set(FBXSDK_LIB_DIR ${FBXSDK_DIR}/lib/vs2019/x64)
 set(FBXSDK_INCLUDE ${FBXSDK_DIR}/include)
+set(FBXSDK_DLL ${FBXSDK_LIB_DIR}/release/libfbxsdk.dll)
 
 target_include_directories(FBX2glTF PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/../src
@@ -107,10 +108,13 @@ target_include_directories(FBX2glTF PUBLIC
 	${FBXSDK_INCLUDE}
 )
 target_link_libraries(FBX2glTF PUBLIC
-	optimized ${FBXSDK_LIB_DIR}/release/libfbxsdk-md.lib
-	optimized ${FBXSDK_LIB_DIR}/release/libxml2-md.lib
-	optimized ${FBXSDK_LIB_DIR}/release/zlib-md.lib
-	debug ${FBXSDK_LIB_DIR}/debug/libfbxsdk-md.lib
-	debug ${FBXSDK_LIB_DIR}/debug/libxml2-md.lib
-	debug ${FBXSDK_LIB_DIR}/debug/zlib-md.lib
+	optimized ${FBXSDK_LIB_DIR}/release/libfbxsdk.lib
+	debug ${FBXSDK_LIB_DIR}/release/libfbxsdk.lib
+)
+target_compile_definitions(FBX2glTF PUBLIC FBXSDK_SHARED)
+
+# copy the fbxsdk dynamic library to the output directory
+ADD_CUSTOM_COMMAND(
+    TARGET FBX2glTF POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FBXSDK_DLL} $<TARGET_FILE_DIR:FBX2glTF>
 )
