@@ -749,6 +749,16 @@ static void ReadNodeHierarchy(
   }
 }
 
+static bool NodeHasAnimation(FbxNode* pNode, FbxAnimStack* pAnimStack) {
+  FbxAnimCurveNode* lAnimCurve = NULL;
+  if (pNode->LclTranslation.GetCurveNode(pAnimStack) != nullptr ||
+      pNode->LclRotation.GetCurveNode(pAnimStack) != nullptr ||
+      pNode->LclScaling.GetCurveNode(pAnimStack)) {
+    return true;
+  }
+  return false;
+}
+
 static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& options) {
   FbxTime::EMode eMode = FbxTime::eFrames24;
   switch (options.animationFramerate) {
@@ -835,6 +845,9 @@ static void ReadAnimations(RawModel& raw, FbxScene* pScene, const GltfOptions& o
     const int nodeCount = pScene->GetNodeCount();
     for (int nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
       FbxNode* pNode = pScene->GetNode(nodeIndex);
+      if (!NodeHasAnimation(pNode, pAnimStack)) {
+        continue;
+      }
       const FbxAMatrix baseTransform = pNode->EvaluateLocalTransform();
       const FbxVector4 baseTranslation = baseTransform.GetT();
       const FbxQuaternion baseRotation = baseTransform.GetQ();
