@@ -549,6 +549,8 @@ class RawModel {
       const int keepAttribs,
       const bool forceDiscrete) const;
 
+  std::map<const FbxTexture*, FbxString> textureLocations;
+
  private:
   Vec3f getFaceNormal(int verts[3]) const;
 

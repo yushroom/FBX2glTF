@@ -123,8 +123,7 @@ static void calcMinMax(
 static void ReadMesh(
     RawModel& raw,
     FbxScene* pScene,
-    FbxNode* pNode,
-    const std::map<const FbxTexture*, FbxString>& textureLocations) {
+    FbxNode* pNode) {
   FbxGeometryConverter meshConverter(pScene->GetFbxManager());
   meshConverter.Triangulate(pNode->GetNodeAttribute(), true);
   FbxMesh* pMesh = pNode->GetMesh();
@@ -161,7 +160,7 @@ static void ReadMesh(
   const FbxLayerElementAccess<FbxVector2> uvLayer1(
       pMesh->GetElementUV(1), pMesh->GetElementUVCount());
   const FbxSkinningAccess skinning(pMesh, pScene, pNode);
-  const FbxMaterialsAccess materials(pMesh, textureLocations);
+  const FbxMaterialsAccess materials(pMesh, raw.textureLocations);
   const FbxBlendShapesAccess blendShapes(pMesh);
 
   if (verboseOutput) {
@@ -276,7 +275,7 @@ static void ReadMesh(
       const auto maybeAddTexture = [&](const FbxFileTexture* tex, RawTextureUsage usage) {
         if (tex != nullptr) {
           // dig out the inferred filename from the textureLocations map
-          FbxString inferredPath = textureLocations.find(tex)->second;
+          FbxString inferredPath = raw.textureLocations.find(tex)->second;
           textures[usage] =
               raw.AddTexture(tex->GetName(), tex->GetFileName(), inferredPath.Buffer(), usage);
         }
@@ -605,8 +604,7 @@ static void ReadNodeProperty(RawModel& raw, FbxNode* pNode, FbxProperty& prop) {
 static void ReadNodeAttributes(
     RawModel& raw,
     FbxScene* pScene,
-    FbxNode* pNode,
-    const std::map<const FbxTexture*, FbxString>& textureLocations) {
+    FbxNode* pNode) {
   if (!pNode->GetVisibility()) {
     return;
   }
@@ -630,7 +628,7 @@ static void ReadNodeAttributes(
       case FbxNodeAttribute::eNurbsSurface:
       case FbxNodeAttribute::eTrimNurbsSurface:
       case FbxNodeAttribute::ePatch: {
-        ReadMesh(raw, pScene, pNode, textureLocations);
+        ReadMesh(raw, pScene, pNode);
         break;
       }
       case FbxNodeAttribute::eCamera: {
@@ -661,7 +659,7 @@ static void ReadNodeAttributes(
   }
 
   for (int child = 0; child < pNode->GetChildCount(); child++) {
-    ReadNodeAttributes(raw, pScene, pNode->GetChild(child), textureLocations);
+    ReadNodeAttributes(raw, pScene, pNode->GetChild(child));
   }
 }
 
@@ -1169,8 +1167,7 @@ bool LoadFBXFile(
     return false;
   }
 
-  std::map<const FbxTexture*, FbxString> textureLocations;
-  FindFbxTextures(pScene, fbxFileName, textureExtensions, textureLocations);
+  FindFbxTextures(pScene, fbxFileName, textureExtensions, raw.textureLocations);
 
   // Use Y up for glTF
   FbxAxisSystem::MayaYUp.ConvertScene(pScene);
@@ -1188,7 +1185,7 @@ bool LoadFBXFile(
   scaleFactor = FbxSystemUnit::m.GetConversionFactorFrom(FbxSystemUnit::cm);
 
   ReadNodeHierarchy(raw, pScene, pScene->GetRootNode(), 0, "");
-  ReadNodeAttributes(raw, pScene, pScene->GetRootNode(), textureLocations);
+  ReadNodeAttributes(raw, pScene, pScene->GetRootNode());
   if (!options.ignoreAnimation) {
     ReadAnimations(raw, pScene, options);
   }

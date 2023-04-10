@@ -99,8 +99,7 @@ int RawModel::AddTriangle(
 int RawModel::AddTexture(
     const std::string& name,
     const std::string& fileName,
-    const std::string& fileLocation,
-    RawTextureUsage usage) {
+    const std::string& fileLocation) {
   if (name.empty()) {
     return -1;
   }
