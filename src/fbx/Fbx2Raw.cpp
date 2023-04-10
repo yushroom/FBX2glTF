@@ -54,7 +54,7 @@ static std::string NativeToUTF8(const std::string& str) {
     return str;
   } else {
     std::string u8str = u8cstr;
-    delete[] u8cstr;
+    FbxFree(u8cstr);
     return u8str;
   }
 #else
